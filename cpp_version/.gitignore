@@ -2,3 +2,9 @@ build/*
 .settings/*
 .vscode/*
 project.si4project/*
+cross_compile/*
+test/*
+.cproject
+.project
+CMakeLists.txt
+COPYING
