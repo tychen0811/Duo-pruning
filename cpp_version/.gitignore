@@ -1,0 +1,4 @@
+build/*
+.settings/*
+.vscode/*
+project.si4project/*
