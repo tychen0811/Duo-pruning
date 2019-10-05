@@ -57,7 +57,7 @@ Forest::~Forest() {
   }
 }
 
-void Forest::initCpp(std::string dependent_variable_name, MemoryMode memory_mode, std::string input_file, uint mtry,
+void Forest::initCpp(std::string dependent_variable_name, MemoryMode memory_mode, std::string input_file, std::string validation_file, uint mtry,
     std::string output_prefix, uint num_trees, std::ostream* verbose_out, uint seed, uint num_threads,
     std::string load_forest_filename, ImportanceMode importance_mode, uint min_node_size,
     std::string split_select_weights_file, std::vector<std::string>& always_split_variable_names,
@@ -184,7 +184,7 @@ void Forest::initR(std::string dependent_variable_name, Data* input_data, uint m
   this->keep_inbag = keep_inbag;
 }
 
-void Forest::init(std::string dependent_variable_name, MemoryMode memory_mode, Data* input_data, uint mtry,
+void Forest::init(std::string dependent_variable_name, MemoryMode memory_mode, Data* input_data, Data* input_data, uint mtry,
     std::string output_prefix, uint num_trees, uint seed, uint num_threads, ImportanceMode importance_mode,
     uint min_node_size, std::string status_variable_name, bool prediction_mode, bool sample_with_replacement,
     std::vector<std::string>& unordered_variable_names, bool memory_saving_splitting, SplitRule splitrule,
@@ -192,6 +192,7 @@ void Forest::init(std::string dependent_variable_name, MemoryMode memory_mode, D
 
   // Initialize data with memmode
   this->data = input_data;
+  this->validation_data = input_data2;
 
   // Initialize random number generator and set seed
   if (seed == 0) {
@@ -420,7 +421,7 @@ void Forest::grow() {
       tree_split_select_weights = &split_select_weights[0];
     }
 
-    trees[i]->init(data, mtry, dependent_varID, num_samples, tree_seed, &deterministic_varIDs, &split_select_varIDs,
+    trees[i]->init(data, validation_data, mtry, dependent_varID, num_samples, tree_seed, &deterministic_varIDs, &split_select_varIDs,
         tree_split_select_weights, importance_mode, min_node_size, &no_split_variables, sample_with_replacement,
         &is_ordered_variable, memory_saving_splitting, splitrule, &case_weights, keep_inbag, sample_fraction, alpha,
         minprop, holdout, prepruning, postpruning);

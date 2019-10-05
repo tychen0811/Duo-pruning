@@ -50,7 +50,7 @@ public:
   virtual ~Forest();
 
   // Init from c++ main or Rcpp from R
-  void initCpp(std::string dependent_variable_name, MemoryMode memory_mode, std::string input_file, uint mtry,
+  void initCpp(std::string dependent_variable_name, MemoryMode memory_mode, std::string input_file, std::string validation_file, uint mtry,
       std::string output_prefix, uint num_trees, std::ostream* verbose_out, uint seed, uint num_threads,
       std::string load_forest_filename, ImportanceMode importance_mode, uint min_node_size,
       std::string split_select_weights_file, std::vector<std::string>& always_split_variable_names,
@@ -64,7 +64,7 @@ public:
       std::vector<std::string>& unordered_variable_names, bool memory_saving_splitting, SplitRule splitrule,
       std::vector<double>& case_weights, bool predict_all, bool keep_inbag, double sample_fraction, double alpha,
       double minprop, bool holdout);
-  void init(std::string dependent_variable_name, MemoryMode memory_mode, Data* input_data, uint mtry,
+  void init(std::string dependent_variable_name, MemoryMode memory_mode, Data* input_data, Data* validation_data, uint mtry,
       std::string output_prefix, uint num_trees, uint seed, uint num_threads, ImportanceMode importance_mode,
       uint min_node_size, std::string status_variable_name, bool prediction_mode, bool sample_with_replacement,
       std::vector<std::string>& unordered_variable_names, bool memory_saving_splitting, SplitRule splitrule,
@@ -223,6 +223,7 @@ protected:
 
   std::vector<Tree*> trees;
   Data* data;
+  Data* validation_data;
 
   std::vector<std::vector<double>> predictions;
   double overall_prediction_error;

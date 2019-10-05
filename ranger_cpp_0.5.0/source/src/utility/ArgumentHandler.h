@@ -77,6 +77,7 @@ public:
   double minprop;
   std::vector<std::string> catvars;
   std::string file;
+  std::string file_validation;
   ImportanceMode impmeasure;
   uint targetpartitionsize;
   uint mtry;

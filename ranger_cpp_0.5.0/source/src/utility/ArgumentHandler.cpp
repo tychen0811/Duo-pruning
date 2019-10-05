@@ -36,7 +36,7 @@ wright@imbs.uni-luebeck.de
 
 ArgumentHandler::ArgumentHandler(int argc, char **argv) :
     caseweights(""), depvarname(""), fraction(1), holdout(false), memmode(MEM_DOUBLE), savemem(false), predict(""), splitweights(
-        ""), nthreads(DEFAULT_NUM_THREADS), predall(false), alpha(DEFAULT_ALPHA), minprop(DEFAULT_MINPROP), file(""), impmeasure(
+        ""), nthreads(DEFAULT_NUM_THREADS), predall(false), alpha(DEFAULT_ALPHA), minprop(DEFAULT_MINPROP), file(""), file_validation(""), impmeasure(
         DEFAULT_IMPORTANCE_MODE), targetpartitionsize(0), mtry(0), outprefix("ranger_out"), probability(false), splitrule(
         DEFAULT_SPLITRULE), statusvarname(""), ntree(DEFAULT_NUM_TREE), replace(true), verbose(false), write(false), treetype(
         TREE_CLASSIFICATION), seed(0), prepruning(DEFAULT_NUM_PREPRUNING), postpruning(DEFAULT_NUM_POSTPRUNING) {
@@ -50,7 +50,7 @@ ArgumentHandler::~ArgumentHandler() {
 int ArgumentHandler::processArguments() {
 
   // short options
-  char const *short_options = "A:C:D:F:HM:NP:S:U:XZa:b:c:e:f:hil::m:o:pr:s:t:uvwx:y:z:";
+  char const *short_options = "A:C:D:F:HM:NP:S:U:XZa:b:c:e:f:V:hil::m:o:pr:s:t:uvwx:y:z:";
 
   // long options: longname, no/optional/required argument?, flag(not used!), shortname
     const struct option long_options[] = {
@@ -73,6 +73,7 @@ int ArgumentHandler::processArguments() {
       { "catvars",              required_argument,  0, 'c'},
       { "postpruning",          required_argument,  0, 'e'},
       { "file",                 required_argument,  0, 'f'},
+      { "file_validation",      required_argument,  0, 'V'},
       { "help",                 no_argument,        0, 'h'},
       { "impmeasure",           required_argument,  0, 'i'},
       { "targetpartitionsize",  required_argument,  0, 'l'},
@@ -227,6 +228,10 @@ int ArgumentHandler::processArguments() {
 
     case 'f':
       file = optarg;
+      break;
+
+    case 'V':
+      file_validation = optarg;
       break;
 
     case 'h':
@@ -404,6 +409,9 @@ void ArgumentHandler::checkArguments() {
   if (file.empty()) {
     throw std::runtime_error("Please specify an input filename with '--file'. See '--help' for details.");
   }
+  if (file_validation.empty()) {
+    throw std::runtime_error("Please specify an input filename with '--file_validation'. See '--help' for details.");
+  }
   if (predict.empty() && depvarname.empty()) {
     throw std::runtime_error("Please specify a dependent variable name with '--depvarname'. See '--help' for details.");
   }
@@ -483,6 +491,7 @@ void ArgumentHandler::displayHelp() {
   std::cout << "    " << "--version                     Print version and citation information." << std::endl;
   std::cout << "    " << "--verbose                     Turn on verbose mode." << std::endl;
   std::cout << "    " << "--file FILE                   Filename of input data. Only numerical values are supported." << std::endl;
+  std::cout << "    " << "--file_validation FILE        Filename of input data. Only numerical values are supported." << std::endl;
   std::cout << "    " << "--treetype TYPE               Set tree type to:" << std::endl;
   std::cout << "    " << "                              TYPE = 1: Classification." << std::endl;
   std::cout << "    " << "                              TYPE = 3: Regression." << std::endl;

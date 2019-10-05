@@ -34,7 +34,7 @@
 Tree::Tree() :
     dependent_varID(0), mtry(0), num_samples(0), num_samples_oob(0), is_ordered_variable(0), no_split_variables(0), min_node_size(
         0), deterministic_varIDs(0), split_select_varIDs(0), split_select_weights(0), case_weights(0), oob_sampleIDs(0), holdout(
-        false), keep_inbag(false), data(0), variable_importance(0), importance_mode(DEFAULT_IMPORTANCE_MODE), sample_with_replacement(
+        false), keep_inbag(false), data(0), validation_data(0), variable_importance(0), importance_mode(DEFAULT_IMPORTANCE_MODE), sample_with_replacement(
         true), sample_fraction(1), memory_saving_splitting(false), splitrule(DEFAULT_SPLITRULE), alpha(DEFAULT_ALPHA), minprop(
         DEFAULT_MINPROP) {
 }
@@ -44,7 +44,7 @@ Tree::Tree(std::vector<std::vector<size_t>>& child_nodeIDs, std::vector<size_t>&
     dependent_varID(0), mtry(0), num_samples(0), num_samples_oob(0), is_ordered_variable(is_ordered_variable), no_split_variables(
         0), min_node_size(0), deterministic_varIDs(0), split_select_varIDs(0), split_select_weights(0), case_weights(0), split_varIDs(
         split_varIDs), split_values(split_values), child_nodeIDs(child_nodeIDs), oob_sampleIDs(0), holdout(false), keep_inbag(
-        false), data(0), variable_importance(0), importance_mode(DEFAULT_IMPORTANCE_MODE), sample_with_replacement(
+        false), data(0), validation_data(0), variable_importance(0), importance_mode(DEFAULT_IMPORTANCE_MODE), sample_with_replacement(
         true), sample_fraction(1), memory_saving_splitting(false), splitrule(DEFAULT_SPLITRULE), alpha(DEFAULT_ALPHA), minprop(
         DEFAULT_MINPROP) {
 }
@@ -52,7 +52,7 @@ Tree::Tree(std::vector<std::vector<size_t>>& child_nodeIDs, std::vector<size_t>&
 Tree::~Tree() {
 }
 
-void Tree::init(Data* data, uint mtry, size_t dependent_varID, size_t num_samples, uint seed,
+void Tree::init(Data* data, Data* validation_data, uint mtry, size_t dependent_varID, size_t num_samples, uint seed,
     std::vector<size_t>* deterministic_varIDs, std::vector<size_t>* split_select_varIDs,
     std::vector<double>* split_select_weights, ImportanceMode importance_mode, uint min_node_size,
     std::vector<size_t>* no_split_variables, bool sample_with_replacement, std::vector<bool>* is_unordered,
@@ -101,20 +101,120 @@ void Tree::init(Data* data, uint mtry, size_t dependent_varID, size_t num_sample
 }*/
 
 void Tree::postPruning(uint postpruningNumber){
-   size_t ID = 0;
-   size_t terminal = node.size()-2;
-   size_t left_child_ID;
-   size_t right_child_ID;
-   size_t tree_hight = node.size();
+  size_t ID = 0;
+  size_t terminal = node.size()-2;
+  size_t left_child_ID;
+  size_t right_child_ID;
+  size_t tree_hight = node.size();
   for(int i =tree_hight ; i > 0 ; i--){
-      for(int j = 1; j < node[i-2].size() ; j++ ){
-        
-       		 ID = node[i-2][j];
-                if(check_pruning(ID))
-                  merge(ID);
+    for(int j = 1; j < node[i-2].size() ; j++ ){
+      ID = node[i-2][j];
+      if(postpruningNumber == 0)
+        if(REPpruning(ID))
+          merge(ID);
+      else if(postpruningNumber == 1){
+
       }
+      else{
+
+      }
+    }
   }
 
+}
+
+bool Tree::REPpruning(ID){
+  if(child_nodeIDs[0][ID] != 0 && child_nodeIDs[1][ID] != 0)
+    if(child_nodeIDs[0][child_nodeIDs[0][ID]]==0 && child_nodeIDs[1][child_nodeIDs[0][ID]]==0 
+    && child_nodeIDs[0][child_nodeIDs[1][ID]]==0 && child_nodeIDs[1][child_nodeIDs[1][ID]]==0){
+        return errorCompare();
+    }
+}
+
+bool Tree::errorCompare(uint ID){
+  size_t before_pruning = errorOfTree();
+  size_t origin_node = -1;//node ID is left node or right node
+  size_t origin_leftNode = child_nodeIDs[0][ID];
+  size_t origin_RightNode = child_nodeIDs[1][ID];
+  size_t current_ID = NumberNode() - 1;
+  if(child_nodeIDs[0][parent_node[ID]] == ID){
+    origin_node = 0;
+    child_nodeIDs[0][parent_node[ID]] = current_ID;
+  }
+  else if(child_nodeIDs[1][parent_node[ID]] == ID){
+    origin_node = 1;
+    child_nodeIDs[1][parent_node[ID]] = current_ID;
+  }
+  child_nodeIDs[0].push_back(0);
+  child_nodeIDs[1].push_back(0);
+  if(sampleIDs[origin_leftNode].size()> sampleIDs[origin_RightNode].size()){
+    split_varIDs.push_back(split_varIDs[origin_leftNode]);
+    split_values.push_back(split_values[origin_leftNode]);
+  }
+  else{
+    split_varIDs.push_back(split_varIDs[origin_RightNode]);
+    split_values.push_back(split_values[origin_RightNode]);
+  }
+  size_t after_Pruning = errorOfTree();
+  //restore origin node
+  child_nodeIDs[0].pop();
+  child_nodeIDs[1].pop();
+  split_varIDs.pop();
+  split_values.pop();
+  if(origin_node == 0)
+    child_nodeIDs[0][parent_node[ID]] = ID;
+  else child_nodeIDs[1][parent_node[ID]] = ID;
+  //if error of after Pruning < error of before pruning, -->pruning
+  if(after_Pruning < before_pruning)
+    return true;
+  else return false;
+}
+
+int Tree::errorOfTree(){
+  size_t error = 0;
+  size_t number_samples_validation = validation_data->getNumRows();
+  size_t ID = 0;
+  size_t sample_index = 0;
+  while(sample_index <= number_samples_validation)
+    while(true){
+      //Break if terminal node
+      if(child_nodeIDs[0][ID] == 0 && child_nodeIDs[1][ID] == 0){
+        break;
+      }
+      //split attribute ID
+      size_t split_varID = split_varIDs[ID];
+      double val = validation_data->get(sample_index, split_varID);
+      //is_ordered_variable
+      if ((*is_ordered_variable)[split_varID]) {
+        if (val <= split_values[ID]) {
+          // Move to left child
+          ID = child_nodeIDs[0][ID];
+        } else {
+          // Move to right child
+          ID = child_nodeIDs[1][ID];
+        }
+      } else {
+          size_t factorID = floor(val) - 1;
+          size_t splitID = floor(split_values[ID]);
+
+          // Left if 0 found at position factorID
+          if (!(splitID & (1 << factorID))) {
+            // Move to left child
+            ID = child_nodeIDs[0][ID];
+          } else {
+            // Move to right child
+            ID = child_nodeIDs[1][ID];
+          }
+        }
+      }
+    double real_value = validation_data->get(sample_index, dependent_varID);
+    if(split_values[ID] != real_value){
+      error++
+    }
+    sample_index++;
+  }
+  //return error
+  return error;
 }
 
 void Tree::merge(size_t nodeID){
@@ -165,6 +265,23 @@ void Tree::deleteLeafNode(size_t nodeID){
              }
      }
    
+}
+int Tree::NumberNode(){
+  /*size_t ID = 0;
+  size_t height = 1;
+  parent_node.clear();*/
+  size_t totalNode_size = 0;
+  for(int i = 0;i < node.size(); i++)
+    totalNode_size += node[i][0];
+  /*int *totalNode = new int[totalNode_size];
+  totalNode[0] = -1;
+  for(int i = 0; i < totalNode_size; i++){
+    totalNode[child_nodeIDs[0][i]] = i;
+    totalNode[child_nodeIDs[1][i]] = i;
+  }
+  for(int i = 0; i < totalNode_size; i++)
+    parent_node.push_back(totalNode[i])*/
+  return totalNode_size;
 }
 
 void Tree::grow(std::vector<double>* variable_importance) {
@@ -227,7 +344,6 @@ void Tree::grow(std::vector<double>* variable_importance) {
    }
     
   } 
-  
  //postpruning
  if(postpruning != 0){
     postPruning(postpruning);

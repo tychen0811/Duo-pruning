@@ -46,7 +46,7 @@ public:
 
   virtual ~Tree();
 
-  void init(Data* data, uint mtry, size_t dependent_varID, size_t num_samples, uint seed,
+  void init(Data* data, Data* validation_data, uint mtry, size_t dependent_varID, size_t num_samples, uint seed,
       std::vector<size_t>* deterministic_varIDs, std::vector<size_t>* split_select_varIDs,
       std::vector<double>* split_select_weights, ImportanceMode importance_mode, uint min_node_size,
       std::vector<size_t>* no_split_variables, bool sample_with_replacement, std::vector<bool>* is_unordered,
@@ -168,6 +168,7 @@ protected:
 
   // Pointer to original data
   Data* data;
+  Data* validation_data;
 
   // Variable importance for all variables
   std::vector<double>* variable_importance;
