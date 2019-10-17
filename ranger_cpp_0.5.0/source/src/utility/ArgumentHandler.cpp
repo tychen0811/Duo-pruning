@@ -50,7 +50,7 @@ ArgumentHandler::~ArgumentHandler() {
 int ArgumentHandler::processArguments() {
 
   // short options
-  char const *short_options = "A:C:D:F:HM:NP:S:U:XZa:b:c:e:f:V:hil::m:o:pr:s:t:uvwx:y:z:";
+  char const *short_options = "A:C:D:F:HM:NP:S:U:XZa:b:c:e:f:V:hi:l:m:o:pr:s:t:uvwy:z:x:e:";
 
   // long options: longname, no/optional/required argument?, flag(not used!), shortname
     const struct option long_options[] = {
@@ -71,7 +71,6 @@ int ArgumentHandler::processArguments() {
       { "alpha",                required_argument,  0, 'a'},
       { "minprop",              required_argument,  0, 'b'},
       { "catvars",              required_argument,  0, 'c'},
-      { "postpruning",          required_argument,  0, 'e'},
       { "file",                 required_argument,  0, 'f'},
       { "file_validation",      required_argument,  0, 'V'},
       { "help",                 no_argument,        0, 'h'},
@@ -86,9 +85,10 @@ int ArgumentHandler::processArguments() {
       { "noreplace",            no_argument,        0, 'u'},
       { "verbose",              no_argument,        0, 'v'},
       { "write",                no_argument,        0, 'w'},
-      { "prepruning",           required_argument,  0, 'x'},
       { "treetype",             required_argument,  0, 'y'},
       { "seed",                 required_argument,  0, 'z'},
+      { "prepruning",           required_argument,  0, 'x'},
+      { "postpruning",          required_argument,  0, 'e'},
       { 0, 0, 0, 0}
     };
 

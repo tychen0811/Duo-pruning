@@ -70,7 +70,6 @@ bool Data::loadFromFile(std::string filename) {
   if (!input_file.good()) {
     throw std::runtime_error("Could not open input file.");
   }
-
   // Count number of rows
   size_t line_count = 0;
   std::string line;
@@ -93,7 +92,6 @@ bool Data::loadFromFile(std::string filename) {
   } else {
     result = loadFromFileWhitespace(input_file, header_line);
   }
-
   externalData = false;
   input_file.close();
   return result;

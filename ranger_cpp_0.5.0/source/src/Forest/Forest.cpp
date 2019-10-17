@@ -47,7 +47,7 @@ Forest::Forest() :
     verbose_out(0), num_trees(DEFAULT_NUM_TREE), mtry(0), min_node_size(0), num_variables(0), num_independent_variables(
         0), seed(0), dependent_varID(0), num_samples(0), prediction_mode(false), memory_mode(MEM_DOUBLE), sample_with_replacement(
         true), memory_saving_splitting(false), splitrule(DEFAULT_SPLITRULE), predict_all(false), keep_inbag(false), sample_fraction(
-        1), holdout(false), alpha(DEFAULT_ALPHA), minprop(DEFAULT_MINPROP), num_threads(DEFAULT_NUM_THREADS), data(0), overall_prediction_error(
+        1), holdout(false), alpha(DEFAULT_ALPHA), minprop(DEFAULT_MINPROP), num_threads(DEFAULT_NUM_THREADS), data(0), validation_data(0),overall_prediction_error(
         0), importance_mode(DEFAULT_IMPORTANCE_MODE), progress(0),prepruning(0),postpruning(0) {
 }
 
@@ -79,11 +79,31 @@ void Forest::initCpp(std::string dependent_variable_name, MemoryMode memory_mode
     data = new DataChar();
     break;
   }
+  // Initialize data with memmode
+  switch (memory_mode) {
+  case MEM_DOUBLE:
+    validation_data = new DataDouble();
+    break;
+  case MEM_FLOAT:
+    validation_data = new DataFloat();
+    break;
+  case MEM_CHAR:
+    validation_data = new DataChar();
+    break;
+  }
+
 
   // Load data
   *verbose_out << "Loading input file: " << input_file << "." << std::endl;
   bool rounding_error = data->loadFromFile(input_file);
   if (rounding_error) {
+    *verbose_out << "Warning: Rounding or Integer overflow occurred. Use FLOAT or DOUBLE precision to avoid this."
+        << std::endl;
+  }
+  //Load validation data
+  *verbose_out << "Loading validation file: " << validation_file << "." << std::endl;
+  bool rounding_error2 = validation_data->loadFromFile(validation_file);
+  if (rounding_error2) {
     *verbose_out << "Warning: Rounding or Integer overflow occurred. Use FLOAT or DOUBLE precision to avoid this."
         << std::endl;
   }
@@ -95,7 +115,7 @@ void Forest::initCpp(std::string dependent_variable_name, MemoryMode memory_mode
   }
 
   // Call other init function
-  init(dependent_variable_name, memory_mode, data, mtry, output_prefix, num_trees, seed, num_threads, importance_mode,
+  init(dependent_variable_name, memory_mode, data, validation_data, mtry, output_prefix, num_trees, seed, num_threads, importance_mode,
       min_node_size, status_variable_name, prediction_mode, sample_with_replacement, unordered_variable_names,
       memory_saving_splitting, splitrule, predict_all, sample_fraction, alpha, minprop, holdout , prepruning, postpruning);
 
@@ -158,7 +178,7 @@ void Forest::initR(std::string dependent_variable_name, Data* input_data, uint m
   this->verbose_out = verbose_out;
 
   // Call other init function
-  init(dependent_variable_name, MEM_DOUBLE, input_data, mtry, "", num_trees, seed, num_threads, importance_mode,
+  init(dependent_variable_name, MEM_DOUBLE, input_data, validation_data, mtry, "", num_trees, seed, num_threads, importance_mode,
       min_node_size, status_variable_name, prediction_mode, sample_with_replacement, unordered_variable_names,
       memory_saving_splitting, splitrule, predict_all, sample_fraction, alpha, minprop, holdout, prepruning, postpruning);
 
@@ -184,7 +204,7 @@ void Forest::initR(std::string dependent_variable_name, Data* input_data, uint m
   this->keep_inbag = keep_inbag;
 }
 
-void Forest::init(std::string dependent_variable_name, MemoryMode memory_mode, Data* input_data, Data* input_data, uint mtry,
+void Forest::init(std::string dependent_variable_name, MemoryMode memory_mode, Data* input_data, Data* input_data2, uint mtry,
     std::string output_prefix, uint num_trees, uint seed, uint num_threads, ImportanceMode importance_mode,
     uint min_node_size, std::string status_variable_name, bool prediction_mode, bool sample_with_replacement,
     std::vector<std::string>& unordered_variable_names, bool memory_saving_splitting, SplitRule splitrule,

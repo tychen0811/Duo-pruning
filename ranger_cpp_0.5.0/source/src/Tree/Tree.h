@@ -107,6 +107,11 @@ protected:
   void postPruning(uint postpruningNumber);
   bool isLeafNode(size_t nodeID);
   void deleteLeafNode(size_t nodeID);
+  void merge(size_t nodeID);
+  bool REPpruning(size_t ID);
+  bool errorCompare(size_t ID);
+  int errorOfTree();
+  int NumberNode();
   size_t dependent_varID;
   uint mtry;
   //pruning
@@ -116,6 +121,7 @@ protected:
   std::queue<int> temp;
   std::vector<size_t> leaf_node;
   std::vector<size_t> parent_node;
+
   // Number of samples (all samples, not only inbag for this tree)
   size_t num_samples;
 
