@@ -1,5 +1,0 @@
-/home/cloud/Desktop/ranger_cpp_0.5.0/source/bulid/CMakeFiles/rebuild_cache.dir
-/home/cloud/Desktop/ranger_cpp_0.5.0/source/bulid/CMakeFiles/ranger.dir
-/home/cloud/Desktop/ranger_cpp_0.5.0/source/bulid/CMakeFiles/debug.dir
-/home/cloud/Desktop/ranger_cpp_0.5.0/source/bulid/CMakeFiles/edit_cache.dir
-/home/cloud/Desktop/ranger_cpp_0.5.0/source/bulid/CMakeFiles/release.dir
