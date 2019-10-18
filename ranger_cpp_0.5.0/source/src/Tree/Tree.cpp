@@ -97,10 +97,6 @@ void Tree::init(Data* data, Data* validation_data, uint mtry, size_t dependent_v
   initInternal();
 }
 
-/*bool Tree::check_pruning(size_t nodeID){
-
-}*/
-
 void Tree::postPruning(uint postpruningNumber){
   size_t ID = 0;
   size_t terminal = node.size()-2;
@@ -110,12 +106,11 @@ void Tree::postPruning(uint postpruningNumber){
   for(int i =tree_hight ; i > 0 ; i--){
     for(int j = 1; j < node[i-2].size() ; j++ ){
       ID = node[i-2][j];
-      //std::cout<< "hello"<< std::endl;
       if(postpruningNumber == 1){
         if(REPpruning(ID))
           merge(ID);
       }
-      else if(postpruningNumber == 1){
+      else if(postpruningNumber == 2){
 
       }
       else{
@@ -127,7 +122,6 @@ void Tree::postPruning(uint postpruningNumber){
 }
 
 bool Tree::REPpruning(size_t ID){
-  //std::cout<< "test1"<< std::endl;
   bool prune = false;
   if(child_nodeIDs[0][ID] != 0 && child_nodeIDs[1][ID] != 0)
     if(child_nodeIDs[0][child_nodeIDs[0][ID]]==0 && child_nodeIDs[1][child_nodeIDs[0][ID]]==0 
@@ -138,9 +132,7 @@ bool Tree::REPpruning(size_t ID){
 }
 
 bool Tree::errorCompare(size_t ID){
-  //std::cout<< "test2"<< std::endl;
   size_t before_pruning = errorOfTree();
-  //std::cout<< "test4"<< std::endl;
   size_t LR_node = -1;//node ID is left node or right node
   size_t origin_leftNode = child_nodeIDs[0][ID];
   size_t origin_RightNode = child_nodeIDs[1][ID];
@@ -174,7 +166,6 @@ bool Tree::errorCompare(size_t ID){
   //std::cout<< "split_varIDs:"<<split_varIDs[split_varIDs.size()-1]<<std::endl;
   //std::cout<< "split_values:"<<split_values[split_values.size()-1]<<std::endl;
   
-  //std::cout<< "test5"<< std::endl;
   size_t after_Pruning = errorOfTree();
   //restore origin node
   child_nodeIDs[0].pop_back();
@@ -186,24 +177,20 @@ bool Tree::errorCompare(size_t ID){
   else child_nodeIDs[1][parent_node[ID]] = ID;
   //if error of after Pruning < error of before pruning, -->pruning
   //std::cout<< "after_Pruning:"<<after_Pruning<<std::endl;
-  //std::cout<< "before_pruning:"<<before_pruning<<std::endl;
+  //std::cout<< "before_pruning:"<<before_pruning<<std::endl<<std::endl;
   if(after_Pruning < before_pruning)
     return true;
   else return false;
 }
 
 int Tree::errorOfTree(){
-  //std::cout<< "test3"<< std::endl;
   size_t error = 0;
   size_t number_samples_validation = validation_data->getNumRows();
-  //std::cout<< "number_samples_validation:"<< number_samples_validation<<std::endl;
   size_t ID = 0;
   size_t sample_index = 0;
-  //std::cout<< "test3.1"<< std::endl;
   while(sample_index <= number_samples_validation){
-    //ID = 0;
+    ID = 0;
     while(true){
-      //std::cout<< "test3.3"<< std::endl;
       //Break if terminal node
       if(child_nodeIDs[0][ID] == 0 && child_nodeIDs[1][ID] == 0){
         break;
@@ -217,7 +204,6 @@ int Tree::errorOfTree(){
       //std::cout<< "split_varID:"<< split_varID<<std::endl;
       //is_ordered_variable
       if ((*is_ordered_variable)[split_varID]) {
-        //std::cout<< "test3.5"<< std::endl;
         if (val <= split_values[ID]) {
           // Move to left child
           ID = child_nodeIDs[0][ID];
@@ -226,7 +212,6 @@ int Tree::errorOfTree(){
           ID = child_nodeIDs[1][ID];
         }
       } else {
-        //std::cout<< "test3.6"<< std::endl;
           size_t factorID = floor(val) - 1;
           size_t splitID = floor(split_values[ID]);
 
@@ -240,20 +225,11 @@ int Tree::errorOfTree(){
           }
       }
     }
-    //std::cout<< "test3.7"<< std::endl;
     double real_value = validation_data->get(sample_index, dependent_varID);
-    /*if(saveID != ID && saveID != 0){
-      saveID = ID;
-      std::cout<< "real_value:"<< real_value<<std::endl;
-      std::cout<< "ID:"<< ID<<std::endl;
-      std::cout<< "split_values:"<< split_values[ID]<<std::endl;
-    }
-    saveID = ID;*/
     if(split_values[ID] != real_value){
       error++;
     }
     sample_index++;
-    //std::cout<< "test3.8"<< std::endl;
   }
   //return error
   //std::cout<< "error:"<<error<<std::endl;
@@ -261,25 +237,32 @@ int Tree::errorOfTree(){
 }
 
 void Tree::merge(size_t nodeID){
+
      
-   if(!isLeafNode(child_nodeIDs[0][nodeID])){
+   /*if(!isLeafNode(child_nodeIDs[0][nodeID])){
       merge(child_nodeIDs[0][nodeID]);  
    }
    if(!isLeafNode(child_nodeIDs[1][nodeID])){
       merge(child_nodeIDs[1][nodeID]);
-   }   
+   } */
    if(isLeafNode(child_nodeIDs[0][nodeID])&&isLeafNode(child_nodeIDs[1][nodeID])){
       size_t left_child_ID = child_nodeIDs[0][nodeID];
       size_t right_child_ID = child_nodeIDs[1][nodeID];
-      if(sampleIDs[left_child_ID].size()> sampleIDs[right_child_ID].size())
-          split_values[nodeID] = split_values[left_child_ID];
-      else
+      if(sampleIDs[left_child_ID].size()> sampleIDs[right_child_ID].size()){
+        split_values[nodeID] = split_values[left_child_ID];
+        split_varIDs[nodeID] = split_varIDs[left_child_ID];
+      }
+      else{
         split_values[nodeID] = split_values[right_child_ID];
+        split_varIDs[nodeID] = split_varIDs[right_child_ID];
+      }
       
        deleteLeafNode(child_nodeIDs[0][nodeID]);
        deleteLeafNode(child_nodeIDs[1][nodeID]);
-       leaf_node.push_back(nodeID); 
+       leaf_node.push_back(nodeID);
        
+       sampleIDs.erase(sampleIDs.begin()+child_nodeIDs[0][nodeID]);
+       sampleIDs.erase(sampleIDs.begin()+child_nodeIDs[1][nodeID]);
        child_nodeIDs[0][nodeID] = 0;
        child_nodeIDs[1][nodeID] = 0;      
    
@@ -388,11 +371,17 @@ void Tree::grow(std::vector<double>* variable_importance) {
    }
     
   } 
-  
+  double before = errorOfTree();
+  std::cout<<"error before pruning: "<< before <<std::endl;
+  std::cout<<"error rate: "<< before/validation_data->getNumRows() <<std::endl;
+  std::cout<<"number of node before pruning: "<< sampleIDs.size() <<std::endl<<std::endl;
  //postpruning
  if(postpruning != 0){
     postPruning(postpruning);
-
+    double after = errorOfTree();
+    std::cout<<"error after pruning: "<< after <<std::endl;
+    std::cout<<"error rate: "<< after/validation_data->getNumRows() <<std::endl;
+    std::cout<<"number of node after pruning: "<< sampleIDs.size() <<std::endl<<std::endl;
  } 
 
 // Delete sampleID vector to save memory
