@@ -33,6 +33,7 @@
 #include <random>
 #include <iostream>
 #include <queue>
+#include <time.h>
 #include "globals.h"
 #include "Data.h"
 
@@ -111,12 +112,15 @@ protected:
   bool REPpruning(size_t ID);
   bool errorCompare(size_t ID);
   int errorOfTree();
-  int NumberNode();
+  void traceLeafNode(size_t ID);
   size_t dependent_varID;
   uint mtry;
   //pruning
   uint prepruning;
   uint postpruning;
+  int node_size;
+  double after_Pruning;
+  double before_Pruning;
   std::vector<std::vector<size_t>> node;
   std::queue<int> temp;
   std::vector<size_t> leaf_node;
