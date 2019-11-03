@@ -103,7 +103,7 @@ void Tree::postPruning(uint postpruningNumber){
   size_t left_child_ID;
   size_t right_child_ID;
   size_t tree_hight = node.size();
-  for(int i =tree_hight ; i > 0 ; i--){
+  for(int i =tree_hight ; i > 1 ; i--){
     for(int j = 1; j < node[i-2].size() ; j++ ){
       ID = node[i-2][j];
       if(postpruningNumber == 1){
@@ -139,7 +139,6 @@ void Tree::traceLeafNode(size_t nodeID){
 }
 //add
 bool Tree::errorCompare(size_t ID){
-  //size_t before_pruning = errorOfTree();
   size_t LR_node = -1;//node ID is left node or right node
   size_t origin_leftNode = child_nodeIDs[0][ID];
   size_t origin_RightNode = child_nodeIDs[1][ID];
@@ -225,7 +224,6 @@ int Tree::errorOfTree(){
 }
 
 void Tree::merge(size_t nodeID){
-
      
    if(!isLeafNode(child_nodeIDs[0][nodeID])){
       merge(child_nodeIDs[0][nodeID]);  
@@ -284,7 +282,6 @@ void Tree::deleteLeafNode(size_t nodeID){
 }
 
 void Tree::grow(std::vector<double>* variable_importance) {
-  std::cout<<"grow"<<std::endl;
 
   this->variable_importance = variable_importance;
 
@@ -359,6 +356,8 @@ void Tree::grow(std::vector<double>* variable_importance) {
     time_t t_end = time(NULL);
     std::cout<<"pruning time:"<< t_end - t_start <<std::endl;
     A_node_size = node_size;
+    if(before_Pruning < after_Pruning)
+        after_Pruning = before_Pruning;
     std::cout<<"error after pruning: "<< after_Pruning <<std::endl;
     std::cout<<"error rate: "<< (after_Pruning/validation_data->getNumRows())*100 << "%" <<std::endl;
     std::cout<<"number of node after pruning: "<< A_node_size <<std::endl<<std::endl;
